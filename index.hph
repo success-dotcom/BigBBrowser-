@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BIG B BROWSER</title>
+  <style>
+    body {
+      background: #101014;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    h1 { color: #c084fc; }
+
+    input, button {
+      padding: 12px;
+      margin: 5px 0;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+    }
+
+    input { width: 90%; }
+
+    button {
+      background: #9333ea;
+      color: white;
+      cursor: pointer;
+    }
+
+    .profile {
+      background: #252530;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+    }
+
+    .profile button { margin-right: 5px; }
+
+    iframe {
+      width: 100%;
+      height: 500px;
+      border: 1px solid #555;
+      border-radius: 10px;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>👑 BIG B BROWSER</h1>
+  <p>Create a profile and open its browsing space.</p>
+
+  <input id="profileName" placeholder="Enter profile name">
+  <button onclick="createProfile()">+ Create Profile</button>
+
+  <div id="profiles"></div>
+
+  <section id="browser" hidden>
+    <h2 id="activeProfile"></h2>
+    <button onclick="closeProfile()">← Back to Profiles</button>
+
+    <p>Enter a website address:</p>
+    <input id="website" placeholder="https://example.com">
+    <button onclick="openWebsite()">Open Website</button>
+
+    <iframe id="webview" title="Website preview"
+      sandbox="allow-forms allow-scripts allow-same-origin allow-popups">
+    </iframe>
+
+    <p id="notice"></p>
+  </section>
+
+  <script>
+    let profiles = JSON.parse(
+      localStorage.getItem("bigb_profiles") || "[]"
+    );
+    let active = null;
+
+    function saveProfiles() {
+      localStorage.setItem("bigb_profiles", JSON.stringify(profiles));
+    }
+
+    function createProfile() {
+      const input = document.getElementById("profileName");
+      const name = input.value.trim();
+
+      if (!name) {
+        alert("Please enter a profile name.");
+        return;
+      }
+
+      if (profiles.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+        alert("That profile already exists.");
+        return;
+      }
+
+      profiles.push({ name });
+      saveProfiles();
+      input.value = "";
+      renderProfiles();
+    }
+
+    function renderProfiles() {
+      const container = document.getElementById("profiles");
+      container.innerHTML = "";
+
+      profiles.forEach((profile, index) => {
+        const card = document.createElement("div");
+        card.className = "profile";
+
+        const title = document.createElement("strong");
+        title.textContent = profile.name;
+
+        const enter = document.createElement("button");
+        enter.textContent = "Enter Profile";
+        enter.onclick = () => enterProfile(index);
+
+        const remove = document.createElement("button");
+        remove.textContent = "Delete";
+        remove.onclick = () => {
+          if (confirm("Delete " + profile.name + "?")) {
+            profiles.splice(index, 1);
+            saveProfiles();
+            renderProfiles();
+          }
+        };
+
+        card.append(title, document.createElement("br"), enter, remove);
+        container.appendChild(card);
+      });
+    }
+
+    function enterProfile(index) {
+      active = index;
+      document.getElementById("profiles").hidden = true;
+      document.getElementById("profileName").hidden = true;
+      document.querySelector("body > button").hidden = true;
+      document.getElementById("browser").hidden = false;
+      document.getElementById("activeProfile").textContent =
+        "Browsing: " + profiles[index].name;
+      document.getElementById("notice").textContent =
+        "Some websites block display inside another website. This preview does not isolate cookies or logins.";
+    }
+
+    function closeProfile() {
+      document.getElementById("browser").hidden = true;
+      document.getElementById("profiles").hidden = false;
+      document.getElementById("profileName").hidden = false;
+      document.querySelector("body > button").hidden = false;
+      document.getElementById("webview").src = "about:blank";
+      document.getElementById("website").value = "";
+    }
+
+    function openWebsite() {
+      let address = document.getElementById("website").value.trim();
+
+      if (!address) {
+        alert("Enter a website address.");
+        return;
+      }
+
+      if (!/^https?:\/\//i.test(address)) {
+        address = "https://" + address;
+      }
+
+      try {
+        const url = new URL(address);
+        if (url.protocol !== "https:" && url.protocol !== "http:") {
+          throw new Error("Invalid protocol");
+        }
+        document.getElementById("webview").src = url.href;
+      } catch {
+        alert("Please enter a valid website address.");
+      }
+    }
+
+    renderProfiles();
+  </script>
+</body>
+</html>
