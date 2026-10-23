@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Big B Browser</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #0d0d14;
+  color: white;
+}
+
+header {
+  text-align: center;
+  padding: 25px 0;
+}
+
+header h1 {
+  color: #d9a7ff;
+}
+
+header p, small {
+  color: #aaa;
+}
+
+.card {
+  background: #191923;
+  padding: 20px;
+  border-radius: 16px;
+  margin: 15px 0;
+  border: 1px solid #30303c;
+}
+
+button {
+  border: none;
+  padding: 12px 16px;
+  border-radius: 9px;
+  font-weight: bold;
+  margin: 5px 3px;
+}
+
+.open {
+  background: #d9a7ff;
+  color: #171020;
+}
+
+.add {
+  background: #343444;
+  color: white;
+  width: 100%;
+  margin-top: 12px;
+}
+
+input {
+  width: 100%;
+  padding: 13px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #101018;
+  color: white;
+}
+
+.profile {
+  background: #242432;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 10px;
+}
+
+footer {
+  text-align: center;
+  color: #777;
+  margin-top: 30px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>👑 BIG B BROWSER</h1>
+  <p>Your social browsing dashboard</p>
+</header>
+
+<div class="card">
+  <h2>🌐 Social Platforms</h2>
+  <p>Choose a platform to open.</p>
+
+  <button class="open" onclick="openSite('https://www.facebook.com/')">
+    Facebook
+  </button>
+
+  <button class="open" onclick="openSite('https://www.tiktok.com/')">
+    TikTok
+  </button>
+
+  <button class="open" onclick="openSite('https://www.instagram.com/')">
+    Instagram
+  </button>
+</div>
+
+<div class="card">
+  <h2>📂 My Profiles</h2>
+  <small>Create and organize your profile list.</small>
+
+  <input id="profileName" placeholder="Enter profile name">
+
+  <button class="add" onclick="addProfile()">
+    + Create New Profile
+  </button>
+
+  <div id="profiles"></div>
+</div>
+
+<footer>
+  Big B Browser © 2026
+  <p>Built with ❤️, one step at a time.</p>
+</footer>
+
+<script>
+let profiles = [];
+
+try {
+  profiles = JSON.parse(
+    localStorage.getItem("bigBProfiles") || "[]"
+  );
+} catch (e) {
+  profiles = [];
+}
+
+function openSite(url) {
+  window.open(url, "_blank");
+}
+
+function addProfile() {
+  const input = document.getElementById("profileName");
+  const name = input.value.trim();
+
+  if (!name) {
+    alert("Please enter a profile name.");
+    return;
+  }
+
+  profiles.push({
+    id: Date.now(),
+    name: name
+  });
+
+  localStorage.setItem(
+    "bigBProfiles",
+    JSON.stringify(profiles)
+  );
+
+  input.value = "";
+  renderProfiles();
+}
+
+function deleteProfile(id) {
+  profiles = profiles.filter(p => p.id !== id);
+
+  localStorage.setItem(
+    "bigBProfiles",
+    JSON.stringify(profiles)
+  );
+
+  renderProfiles();
+}
+
+function renderProfiles() {
+  const container = document.getElementById("profiles");
+  container.innerHTML = "";
+
+  profiles.forEach(profile => {
+    const item = document.createElement("div");
+    item.className = "profile";
+
+    const title = document.createElement("strong");
+    title.textContent = "👤 " + profile.name;
+
+    const remove = document.createElement("button");
+    remove.textContent = "Delete";
+    remove.style.background = "#49303a";
+    remove.style.color = "white";
+    remove.onclick = () => deleteProfile(profile.id);
+
+    item.appendChild(title);
+    item.appendChild(document.createElement("br"));
+    item.appendChild(remove);
+
+    container.appendChild(item);
+  });
+}
+
+renderProfiles();
+</script>
+
+</body>
+</html>
